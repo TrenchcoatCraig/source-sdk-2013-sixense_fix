@@ -502,8 +502,3 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/game
-/src/game/client/client_tf.vpc
-/src/createhl2dmprojects.bat
-/src/createtfprojects.bat
-/src/thirdparty/sixensesdk/include
