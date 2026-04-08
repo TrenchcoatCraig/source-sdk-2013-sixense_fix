@@ -36,7 +36,7 @@ extern const char *COM_GetModDirectory();
 #include "c_cs_player.h"
 #endif
 
-#include <isixense.h>
+#include <sixense.h>
 #include <sixense_math.hpp>
 #include <sixense_utils/interfaces.hpp>
 
@@ -68,6 +68,8 @@ using sixenseMath::Line;
 #include "tf_hud_menu_engy_build.h"
 #include "tf_hud_menu_engy_destroy.h"
 #include "tf_hud_menu_spy_disguise.h"
+#include "tf_hud_menu_taunt_selection.h"
+#include "tf_hud_menu_eureka_teleport.h"
 #endif 
 
 #ifdef PORTAL2
@@ -376,25 +378,63 @@ bool SixenseInput::LoadModules()
 	if( m_bModulesLoaded ) 
 		return true;
 
-	// Try to load the sixense DLLs
+	// Try to load the sixense DLLs/libraries
 
-	g_pSixenseModule = Sys_LoadModule( "sixense" );
+	#if defined(_WIN64)
+		Msg("Attempting to load sixense_x64.dll \n");
+		g_pSixenseModule = Sys_LoadModule( "sixense_x64.dll" );
+		if( !g_pSixenseModule )
+		{
+			Msg("Failed to load sixense_x64.dll \n");
+			return false;
+		}
+	#elif defined(__linux__) && defined(__x86_64__)
+		Msg("Attempting to load libsixense_x64.so \n");
+		g_pSixenseModule = Sys_LoadModule( "libsixense_x64.so" );
+		if( !g_pSixenseModule )
+		{
+			Msg("Failed to load libsixense_x64.so \n");
+			Msg("dlerror: %s\n", dlerror());
+			return false;
+		}
+	#else //WIN32
+		Msg("Attempting to load sixense.dll \n");
+		g_pSixenseModule = Sys_LoadModule( "sixense.dll" );
+		if( !g_pSixenseModule )
+		{
+			Msg("Failed to load sixense.dll \n");
+			return false;
+		}
+	#endif
 
-	if( !g_pSixenseModule )
-	{
-		Msg("Failed to load sixense.dll\n");
-		return false;
-	}
+	#if defined(_WIN64)
+		Msg("Attempting to load sixense_utils_x64.dll \n");
+		g_pSixenseUtilsModule = Sys_LoadModule( "sixense_utils_x64.dll" );
+		if( !g_pSixenseModule )
+		{
+			Msg("Failed to load sixense_utils_x64.dll \n");
+			return false;
+		}
+	#elif defined(__linux__) && defined(__x86_64__)
+		Msg("Attempting to load libsixense_utils_x64.so \n");
+		g_pSixenseUtilsModule = Sys_LoadModule( "libsixense_utils_x64.so" );
+		if( !g_pSixenseModule )
+		{
+			Msg("Failed to load libsixense_utils_x64.so \n");
+			Msg("dlerror: %s\n", dlerror());
+			return false;
+		}
+	#else //WIN32
+		Msg("Attempting to load sixense_utils.dll \n");
+		g_pSixenseUtilsModule = Sys_LoadModule( "sixense_utils.dll" );
+		if( !g_pSixenseModule )
+		{
+			Msg("Failed to load sixense_utils.dll \n");
+			return false;
+		}
+	#endif
 
-	g_pSixenseUtilsModule = Sys_LoadModule( "sixense_utils" );
-
-	if( !g_pSixenseUtilsModule )
-	{
-		Msg("Failed to load sixense_utils.dll\n");
-		return false;
-	}
-
-	Msg("Successfully loaded sixense modules.\n");
+	Msg("Successfully found sixense modules.\n");
 
 	bool found_objects = false;
 
@@ -415,7 +455,7 @@ bool SixenseInput::LoadModules()
 
 	if( !found_objects ) 
 	{
-		Msg("Failed to find factory in sixense.dll\n");
+		Msg("Failed to find factory in sixense module\n");
 		return false;
 	}
 
@@ -455,7 +495,7 @@ bool SixenseInput::LoadModules()
 
 	if( !found_objects ) 
 	{
-		Msg("Failed to find factory in sixense_utils.dll\n");
+		Msg("Failed to find factory in sixense_utils module\n");
 		return false;
 	}
 
@@ -465,6 +505,7 @@ bool SixenseInput::LoadModules()
 
 	// We can't set the mode until modules are loaded, so do it now
 	SetMode( sixense_mode.GetInt() );
+	Msg("Successfully initialized sixense modules.\n");
 
 	return true;
 }
@@ -629,7 +670,7 @@ ConCommand sixense_autosave( "sixense_autosave", SixenseAutosave );
 #ifdef INPUT_EVENTS
 static void sendMouseClick( int click, int release )
 {
-#ifdef WIN32
+#if defined WIN32
 	// Set up the input event struct
 	INPUT input_ev[1]; 
 
@@ -682,7 +723,7 @@ static void sendMouseClick( int click, int release )
 
 static void sendKeyState( char key, int press, int release )
 {
-#ifdef WIN32
+#if defined WIN32
 	// Set up the input event struct
 	INPUT input_ev[1];
 
@@ -717,7 +758,7 @@ static void sendKeyState( char key, int press, int release )
 
 static void sendAbsoluteMouseMove( float x, float y ) 
 {
-#ifdef WIN32
+#if defined WIN32
 	// Set up the input event struct
 	INPUT input_ev[1];
 
@@ -2815,6 +2856,70 @@ void SixenseInput::SixenseUpdateKeys( float flFrametime, CUserCmd *pCmd )
 		}
 	}
 
+	CHudEurekaEffectTeleportMenu *pEurekaEffectTeleportMenu = ( CHudEurekaEffectTeleportMenu * )GET_HUDELEMENT( CHudEurekaEffectTeleportMenu );
+	if (pEurekaEffectTeleportMenu->IsVisible())
+	{
+		if( m_pRightButtonStates->buttonJustPressed( SIXENSE_BUTTON_3 ))
+		{
+			pEurekaEffectTeleportMenu->HudElementKeyInput( 1, KEY_1, "eureka_teleport 0" );
+		}
+		if( m_pRightButtonStates->buttonJustPressed( SIXENSE_BUTTON_4 ))
+		{
+			pEurekaEffectTeleportMenu->HudElementKeyInput( 1, KEY_2, "eureka_teleport 1" );
+		}
+		if( m_pRightButtonStates->stickJustPressed(sixenseUtils::IButtonStates::DIR_DOWN ) )
+		{
+			engine->ClientCmd( "lastinv" );
+		}
+	}
+
+	CHudMenuTauntSelection *pTauntSelection = ( CHudMenuTauntSelection * )GET_HUDELEMENT( CHudMenuTauntSelection );
+	if (pTauntSelection->IsVisible())
+	{
+		if( m_pLeftButtonStates->buttonJustPressed( SIXENSE_BUTTON_3 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_1, "slot1" );
+		}
+		if( m_pLeftButtonStates->buttonJustPressed( SIXENSE_BUTTON_1 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_2, "slot2" );
+		}
+		if( m_pLeftButtonStates->buttonJustPressed( SIXENSE_BUTTON_2 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_3, "slot3" );
+		}
+		if( m_pLeftButtonStates->buttonJustPressed( SIXENSE_BUTTON_4 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_4, "slot4" );
+		}
+		if( m_pRightButtonStates->buttonJustPressed( SIXENSE_BUTTON_3 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_5, "slot5" );
+		}
+		if( m_pRightButtonStates->buttonJustPressed( SIXENSE_BUTTON_1 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_6, "slot6" );
+		}
+		if( m_pRightButtonStates->buttonJustPressed( SIXENSE_BUTTON_2 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_7, "slot7" );
+		}
+		if( m_pRightButtonStates->buttonJustPressed( SIXENSE_BUTTON_4 ) )
+		{
+			pTauntSelection->HudElementKeyInput( 1, KEY_8, "slot8" );
+		}
+		if( m_pRightButtonStates->buttonJustPressed( SIXENSE_BUTTON_BUMPER ) )
+		{
+			engine->ExecuteClientCmd( "taunt" );
+		}
+		if( m_pRightButtonStates->stickJustPressed( sixenseUtils::IButtonStates::DIR_DOWN ) )
+		{
+			//	engine->ExecuteClientCmd( "lastinv" );  This solution does not work with the taunt menu specifically. Hacky workaround implemented.
+			::sendKeyState(0x16, 0, 1); // 0x16 == Q key scancode
+			//  SetShowHudMenuTauntSelection( false );
+		}
+	}
+
 	if ( TFGameRules() && TFGameRules()->IsInTraining() )
 	{
 		if( m_pLeftButtonStates->absoluteTiltJustStarted( sixenseUtils::IButtonStates::DIR_UP ) )
@@ -4032,6 +4137,18 @@ bool SixenseInput::AreBindingsDisabled()
 
 	CHudMenuEngyDestroy *pEngDestroyMenu = ( CHudMenuEngyDestroy * )GET_HUDELEMENT( CHudMenuEngyDestroy );
 	if( pEngDestroyMenu->IsVisible() ) 
+	{
+		return true;
+	}
+
+	CHudMenuTauntSelection* pTauntSelection = (CHudMenuTauntSelection*)GET_HUDELEMENT(CHudMenuTauntSelection);
+	if (pTauntSelection->IsVisible())
+	{
+		return true;
+	}
+
+	CHudEurekaEffectTeleportMenu* pEurekaEffectTeleportMenu = (CHudEurekaEffectTeleportMenu*)GET_HUDELEMENT(CHudEurekaEffectTeleportMenu);
+	if (pEurekaEffectTeleportMenu->IsVisible())
 	{
 		return true;
 	}

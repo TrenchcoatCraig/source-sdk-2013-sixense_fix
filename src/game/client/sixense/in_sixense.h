@@ -200,7 +200,36 @@ private:
 
 	float m_fTeleportWaitToBlendTime;
 
-	class ISixenseAPI *m_pSixenseAPI;
+	class ISixenseAPI
+	{
+	public:
+		virtual int sixenseInit( void );
+		virtual int sixenseExit( void );
+		virtual int sixenseGetMaxBases();
+		virtual int sixenseSetActiveBase( int i );
+		virtual int sixenseIsBaseConnected( int i );
+		virtual int sixenseGetMaxControllers( void );
+		virtual int sixenseIsControllerEnabled( int which );
+		virtual int sixenseGetNumActiveControllers();
+		virtual int sixenseGetHistorySize();
+		virtual int sixenseGetData( int which, int index_back, sixenseControllerData * );
+		virtual int sixenseGetAllData( int index_back, sixenseAllControllerData * );
+		virtual int sixenseGetNewestData( int which, sixenseControllerData * );
+		virtual int sixenseGetAllNewestData( sixenseAllControllerData * );
+		virtual int sixenseSetHemisphereTrackingMode( int which_controller, int state );
+		virtual int sixenseGetHemisphereTrackingMode( int which_controller, int *state );
+		virtual int sixenseAutoEnableHemisphereTracking( int which_controller );
+		virtual int sixenseSetHighPriorityBindingEnabled( int on_or_off );
+		virtual int sixenseGetHighPriorityBindingEnabled( int *on_or_off );
+		virtual int sixenseTriggerVibration( int controller_id, int duration_100ms, int pattern_id );
+		virtual int sixenseSetFilterEnabled( int on_or_off );
+		virtual int sixenseGetFilterEnabled( int *on_or_off );
+		virtual int sixenseSetFilterParams( float near_range, float near_val, float far_range, float far_val );
+		virtual int sixenseGetFilterParams( float *near_range, float *near_val, float *far_range, float *far_val );
+		virtual int sixenseSetBaseColor( unsigned char red, unsigned char green, unsigned char blue );
+		virtual int sixenseGetBaseColor( unsigned char *red, unsigned char *green, unsigned char *blue );
+	};
+	ISixenseAPI *m_pSixenseAPI;
 
 	struct _sixenseAllControllerData *m_pACD;
 
