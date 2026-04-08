@@ -2914,8 +2914,8 @@ void SixenseInput::SixenseUpdateKeys( float flFrametime, CUserCmd *pCmd )
 		}
 		if( m_pRightButtonStates->stickJustPressed( sixenseUtils::IButtonStates::DIR_DOWN ) )
 		{
-			//	engine->ExecuteClientCmd( "lastinv" );  This solution does not work with the taunt menu specifically. Hacky workaround implemented.
-			::sendKeyState(0x16, 0, 1); // 0x16 == Q key scancode
+				engine->ExecuteClientCmd( "lastinv" );  // This solution does not work with the taunt menu specifically. 
+			//::sendKeyState(0x16, 0, 1); // 0x16 == Q key scancode
 			//  SetShowHudMenuTauntSelection( false );
 		}
 	}
