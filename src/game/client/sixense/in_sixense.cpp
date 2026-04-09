@@ -434,12 +434,11 @@ bool SixenseInput::LoadModules()
 		}
 	#endif
 
-	Msg("Successfully found sixense modules.\n");
-
 	bool found_objects = false;
 
 	if(g_pSixenseModule)
 	{
+		Msg("Successfully found sixense module.\n");
 		CreateInterfaceFn factory = Sys_GetFactory( g_pSixenseModule );
 
 		if( factory ) 
@@ -465,6 +464,7 @@ bool SixenseInput::LoadModules()
 
 	if(g_pSixenseUtilsModule)
 	{
+		Msg("Successfully found sixense_utils module.\n");
 		CreateInterfaceFn factory = Sys_GetFactory( g_pSixenseUtilsModule );
 
 		if( factory ) 
