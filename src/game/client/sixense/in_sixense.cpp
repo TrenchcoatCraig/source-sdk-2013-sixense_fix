@@ -2914,9 +2914,12 @@ void SixenseInput::SixenseUpdateKeys( float flFrametime, CUserCmd *pCmd )
 		}
 		if( m_pRightButtonStates->stickJustPressed( sixenseUtils::IButtonStates::DIR_DOWN ) )
 		{
-				engine->ExecuteClientCmd( "lastinv" );  // This solution does not work with the taunt menu specifically. 
-			//::sendKeyState(0x16, 0, 1); // 0x16 == Q key scancode
-			//  SetShowHudMenuTauntSelection( false );
+			//engine->ExecuteClientCmd("taunt"); Does not work with taunt menu specifically, so we're doing what the Steam Controller does to close the taunt menu instead. 
+			CTFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
+			if (pPlayer)
+			{
+				pPlayer->SetShowHudMenuTauntSelection(false);
+			}
 		}
 	}
 
