@@ -26,11 +26,11 @@ namespace sixenseUtils {
 	class IFPSPlayerMovement;
 	class IFPSEvents;
 	class IFPSMeleeWeapon;
-
+	class IMousePointer;
 	class IDerivatives;
 	class IButtonStates;
 	class ILaserPointer;
-
+	class IMouseAndKeyboard;
 	class IControllerManager;
 };
 
@@ -197,6 +197,7 @@ private:
 	bool m_bScopeSwitchedMode;
 	sixenseUtils::IFPSViewAngles::fps_mode m_nScopeSwitchedPrevMode;
 	int m_nScopeSwitchedPrevSpringViewEnabled;
+	int m_nChargingPrevSpringViewEnabled;
 
 	float m_fTeleportWaitToBlendTime;
 
@@ -236,11 +237,11 @@ private:
 	class sixenseUtils::IFPSViewAngles *m_pFPSViewAngles;
 	class sixenseUtils::IFPSPlayerMovement *m_pFPSPlayerMovement;
 	class sixenseUtils::IFPSEvents *m_pFPSEvents;
-
+	class sixenseUtils::IMousePointer* m_pMousePointer;
 	class sixenseUtils::IDerivatives *m_pLeftDeriv, *m_pRightDeriv;
 	class sixenseUtils::IButtonStates *m_pLeftButtonStates, *m_pRightButtonStates;
 	class sixenseUtils::ILaserPointer *m_pLaserPointer;
-
+	class sixenseUtils::IMouseAndKeyboard* m_pMouseAndKeyboard;
 	class sixenseUtils::IControllerManager *m_pControllerManager;
 
 	int m_LastViewMode;
